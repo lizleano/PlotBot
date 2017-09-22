@@ -1,3 +1,4 @@
 Tweepy==3.5.0
 numpy==1.12.1
 pandas==0.20.1
+seaborn==0.7.2
