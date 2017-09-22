@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 import tweepy
 import time
-# import seaborn as sns
+import seaborn as sns
 
 # Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
@@ -55,7 +55,7 @@ def createChart(sentiments_pd, target_user):
     plt.legend(title="Tweets", bbox_to_anchor=(1.30,1))
 
     fig = plt.gcf()
-    plt.show()
+    # plt.show()
     plt.draw()
     
     figurename = "%s.png" % target_user
