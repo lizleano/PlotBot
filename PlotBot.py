@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import json
 import tweepy
 import time
-import seaborn as sns
+# import seaborn as sns
 
 # Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
