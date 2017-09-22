@@ -4,7 +4,7 @@
 # In[1]:
 
 # Dependencies
-# import numpy as np
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import json
