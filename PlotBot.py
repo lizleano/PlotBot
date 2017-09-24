@@ -38,8 +38,9 @@ last_since_id = 0
 def authorize():
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
-    api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+    api = tweepy.API(auth, parser=tweepy.parsers.JSONParser(), wait_on_rate_limit = True, wait_on_rate_limit_notify = True)
     return api
+    
 
 def createChart(sentiments_pd, target_user):
     # Create plot
@@ -52,14 +53,20 @@ def createChart(sentiments_pd, target_user):
     plt.ylabel("Tweet Polarity")
     plt.xlabel("Tweets Ago")
     
-    plt.legend(title="Tweets", bbox_to_anchor=(1.30,1))
+    plt.legend(title="Tweets", bbox_to_anchor=(1.25,1))
 
-    fig = plt.gcf()
-    # plt.show()
+    
     plt.draw()
     
     figurename = "%s.png" % target_user
-    fig.savefig(figurename, bbox_inches='tight')
+    plt.savefig(figurename, bbox_inches='tight', dpi=300)
+
+    # close the plot
+    plt.close()
+    # clear the axis so inverting wil not re-invert!
+    plt.cla()
+    # clear the figure
+    plt.clf()
 
 
 # function to plot analysis
@@ -121,40 +128,55 @@ def runAnalysis(target, numberOfTweets):
 
         # clear array
         del sentiments_array[:]
+        return True
+    else:
+        return False
 
 # function to get all mentioned tweets
 def mentionedTweets(mentionString, tweet_since_id, maxTweets):
+    # initalize last_id
     last_id = tweet_since_id
     api = authorize()    
 
     if (tweet_since_id > 0):
-        public_tweets = api.search(mentionString, count=100, result_type="recent", since_id=last_id)
+        print("continue after lastid: %s" % last_id)
+        public_tweets = api.search(q=mentionString, count=10, result_type="recent", since_id=tweet_since_id)
     else:
-        public_tweets = api.search(mentionString, count=100, result_type="recent")
-   
+        print("begin search")
+        public_tweets = api.search(mentionString, result_type="recent", count=100)
+    
+    
     #  get last tweet id
-    if (len(public_tweets['statuses']) > 0):
+    if (len(public_tweets['statuses']) > 0):  
+        # pick up last id of the group if tweets found
         last_id = public_tweets['statuses'][0]["id"]
+        
+#         print(json.dumps(public_tweets['statuses'], indent=4))
 
         # Loop through all tweets for mentions and pickup the name of target account to analyze 
         for tweet in public_tweets['statuses']:
+            # Respond to the tweet with one of the response lines
+#             print(tweet['text'])
             # check to see if Analyze: is present
-            if "Analyze:" in tweet["text"]:        
+            if "Analyze:" in tweet["text"]:
                 tweet_id = tweet["id"]
+#                 print(tweet_id)
+#                 print(json.dumps(tweet, indent=4))
                 words = tweet["text"].lower().split("analyze")
+                            
+                print(tweet['user']['screen_name'])
                 sender_account = tweet['user']['screen_name']
-                target_account = tweet['entities']['user_mentions'][len(tweet['entities']['user_mentions'])-1]['screen_name']     
+                target_account = (tweet['entities']['user_mentions'][len(tweet['entities']['user_mentions'])-1]['screen_name'])       
                 returnResponse = "New Tweet Analysis: %s (Thx @%s!)" % (target_account, sender_account)
 
-                runAnalysis(target_account, maxTweets)
-
-#                 Create a status update
-                api.update_with_media(filename="@%s.png" % target_account,
-                                      status=returnResponse)
-
-                api.update_with_media(filename="@%s.png" % target_account,
-                                      status=returnResponse,
-                                      in_repy_to_status_id=tweet_id)
+                if (runAnalysis(target_account, maxTweets)):
+                    # Create a status update
+                    api.update_with_media(filename="@%s.png" % target_account,
+                                  status=returnResponse,
+                                  in_reply_to_status_id=tweet_id)
+                else:
+                    api.update_status(status="No tweets found for @%s" % target_account,
+                                    in_reply_to_status_id=tweet_id)
 
     return (last_id)
 
@@ -163,6 +185,6 @@ def mentionedTweets(mentionString, tweet_since_id, maxTweets):
 
 maxTweets = 500
 while(True):
-    last_since_id = mentionedTweets(searchstring, last_since_id, maxTweets)
-    
-    time.sleep(60)
+# for x in range(2):
+    last_since_id = mentionedTweets(searchstring, last_since_id, maxTweets)    
+    time.sleep(300)
