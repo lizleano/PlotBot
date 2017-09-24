@@ -6,6 +6,7 @@
 # Dependencies
 import numpy as np
 import pandas as pd
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import json
 import tweepy
