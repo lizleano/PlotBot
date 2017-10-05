@@ -4,13 +4,12 @@
 # In[1]:
 
 # Dependencies
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import json
 import tweepy
 import time
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 # Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
