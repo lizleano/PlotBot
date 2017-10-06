@@ -157,7 +157,7 @@ def mentionedTweets(mentionString, tweet_since_id, maxTweets):
         # Loop through all tweets for mentions and pickup the name of target account to analyze 
         for tweet in public_tweets['statuses']:
             # Respond to the tweet with one of the response lines
-#             print(tweet['text'])
+            print(tweet['text'])
             # check to see if Analyze: is present
             if "Analyze:" in tweet["text"]:
                 tweet_id = tweet["id"]
@@ -169,15 +169,20 @@ def mentionedTweets(mentionString, tweet_since_id, maxTweets):
                 sender_account = tweet['user']['screen_name']
                 target_account = (tweet['entities']['user_mentions'][len(tweet['entities']['user_mentions'])-1]['screen_name'])       
                 returnResponse = "New Tweet Analysis: %s (Thx @%s!)" % (target_account, sender_account)
+                print (returnResponse)
 
-                if (runAnalysis(target_account, maxTweets)):
-                    # Create a status update
-                    api.update_with_media(filename="@%s.png" % target_account,
+                try:
+                    if (runAnalysis(target_account, maxTweets)):
+                    # runAnalysis(target_account, maxTweets)
+                        # Create a status update
+                        api.update_with_media(filename="@%s.png" % target_account,
                                   status=returnResponse,
                                   in_reply_to_status_id=tweet_id)
-                else:
-                    api.update_status(status="No tweets found for @%s" % target_account,
-                                    in_reply_to_status_id=tweet_id)
+                    else:
+                        api.update_status(status="No tweets found for @%s" % target_account,
+                                        in_reply_to_status_id=tweet_id)
+                except:
+                    print("Not able to send tweet to %s" % sender_account)
 
     return (last_id)
 
